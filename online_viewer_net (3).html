@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Escáner QR Android</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { color: #00ffc3; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #result {
+      margin-top: 20px;
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    select {
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #00ffc3;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Escáner QR Android</h1>
+  <select id="cameraSelect"></select><br>
+  <button onclick="startScanner()">Iniciar Cámara</button>
+
+  <div id="reader" style="margin-top:20px;"></div>
+  <div id="result">Esperando código QR...</div>
+
+  <script>
+    let html5QrCode;
+    let currentCameraId = null;
+
+    async function startScanner() {
+      const cameraId = document.getElementById("cameraSelect").value;
+      currentCameraId = cameraId;
+      html5QrCode = new Html5Qrcode("reader");
+
+      await html5QrCode.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        (decodedText) => {
+          document.getElementById("result").innerText = "QR Detectado: " + decodedText;
+        },
+        (errorMessage) => {
+          // console.log("No se detectó QR", errorMessage);
+        }
+      ).catch((err) => {
+        document.getElementById("result").innerText = "Error: " + err;
+      });
+    }
+
+    Html5Qrcode.getCameras().then(devices => {
+      const select = document.getElementById("cameraSelect");
+      devices.forEach(device => {
+        const option = document.createElement("option");
+        option.value = device.id;
+        option.text = device.label || `Cámara ${select.length + 1}`;
+        select.appendChild(option);
+      });
+    }).catch(err => {
+      document.getElementById("result").innerText = "No se detectaron cámaras: " + err;
+    });
+  </script>
+
+</body>
+</html>
